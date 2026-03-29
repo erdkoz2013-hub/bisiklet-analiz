@@ -6,10 +6,17 @@ st.set_page_config(page_title="Erkoz Bisiklet Analiz", page_icon="🚴")
 st.title("🚴 Erkoz Hakkaniyetli Bisiklet Analiz")
 st.subheader("Gerçek Sporcu Emeği Ölçüm Sistemi")
 
-# 2. Giriş Alanları
+# 2. Giriş Alanları (Sol Menü - Sidebar)
 st.sidebar.header("📋 Sürücü ve Ekipman")
 surucu_adi = st.sidebar.text_input("Sürücü Adı Soyadı", "Ahmet Tatar")
 bisiklet_marka = st.sidebar.text_input("Bisiklet Marka / Model", "Salcano XRS001")
+
+# YENİ: Kalori/Efor Seçeneğini de Sola, İsimlerin Altına Ekledim
+kalori_seviyesi = st.sidebar.selectbox(
+    "🔥 Haftalık Kalori Yakımı", 
+    ["Az Kalori (Keyfi)", "Normal Kalori (Tempo)", "Çok Kalori (Performans)"],
+    index=1
+)
 
 col1, col2 = st.columns(2)
 with col1:
@@ -23,15 +30,25 @@ with col2:
 
 ruzgar_pozisyonu = st.selectbox("Grup İçi Pozisyon", ["Kahraman (Önde)", "Takipçi", "Solo"])
 
-# 3. Hesaplama (Erkoz Algoritması)
+# 3. Hesaplama (Erkoz Algoritması + Kalori Çarpanı)
 agirlik_katsayisi = bisiklet_agirligi / 7.0 
 ruzgar_bonusu = 1.30 if "Kahraman" in ruzgar_pozisyonu else 1.0
 yas_bonusu = 1.0 + (yas / 100) 
-final_skor = int(((haftalik_km * 0.5) + (haftalik_irtifa * 0.1)) * agirlik_katsayisi * ruzgar_bonusu * yas_bonusu)
+
+# Kalori Katsayısı Belirleme
+if "Az" in kalori_seviyesi:
+    kalori_carpan = 1.0
+elif "Normal" in kalori_seviyesi:
+    kalori_carpan = 1.15
+else: # Çok Kalori (Performans)
+    kalori_carpan = 1.35
+
+# Final Skor: Senin orijinal formülüne kalori çarpanını ekledim
+final_skor = int(((haftalik_km * 0.5) + (haftalik_irtifa * 0.1)) * agirlik_katsayisi * ruzgar_bonusu * yas_bonusu * kalori_carpan)
 
 st.success(f"📊 Mevcut Hesaplanan Hakkaniyet Puanı: *{final_skor}*")
 
-# 4. ŞIK RAPOR (HATASIZ YÖNTEM)
+# 4. ŞIK RAPOR (Sertifika Kısmı)
 if st.button("Hakkaniyetli Raporu Oluştur"):
     st.balloons()
     
@@ -44,11 +61,12 @@ if st.button("Hakkaniyetli Raporu Oluştur"):
         <div style="text-align: left; font-size: 20px;">
             <p><b>Sürücü:</b> {surucu_adi}</p>
             <p><b>Ekipman:</b> {bisiklet_marka} ({bisiklet_agirligi} kg)</p>
+            <p><b>Efor Seviyesi:</b> {kalori_seviyesi}</p>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # BAŞARI PUANI (Ayrı bir kutu olarak, en güvenli şekilde)
+    # BAŞARI PUANI
     st.markdown(f"""
     <div style="background-color: #2e7d32; color: white; padding: 20px; border-radius: 15px; text-align: center; margin-top: 10px;">
         <p style="font-size: 20px; margin-bottom: 0;">HAKKANİYETLİ BAŞARI PUANI</p>
@@ -59,7 +77,7 @@ if st.button("Hakkaniyetli Raporu Oluştur"):
     # Alt Bilgi
     st.markdown(f"""
     <div style="text-align: right; margin-top: 15px; font-style: italic;">
-        <p>"Hafif bisikletle herkes gider, asıl başarı ağırla rüzgarı yarmaktır."</p>
+        <p>"Hafif bisikletle herkes gider, asıl başarı ağırla rüzgarı ve yüksek kaloriyi devirmektir."</p>
         <p><b>- Erkoz Yazılım 2026</b></p>
     </div>
     """, unsafe_allow_html=True)
