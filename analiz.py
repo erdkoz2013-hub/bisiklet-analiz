@@ -63,8 +63,8 @@ with st.sidebar:
     
     st.markdown("---")
     st.header("📋 Veri Girişi")
-    surucu_adi = st.text_input("Sürücü Adı Soyadı", "Ahmet Tatar").strip()
-    bisiklet_marka = st.text_input("Bisiklet Modeli", "Salcano XRS001")
+    surucu_adi = st.text_input("Sürücü Adı Soyadı", "Erdal Kozal").strip()
+    bisiklet_marka = st.text_input("Bisiklet Modeli", "Mosso Black Edition29")
     
     col_boy, col_kilo = st.columns(2)
     with col_boy: boy = st.number_input("Boy (m)", 1.0, 2.5, 1.75)
