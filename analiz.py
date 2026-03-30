@@ -3,11 +3,10 @@ from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 from datetime import date
 
-# ERKOZ ANALİZ v3.1 - KESİN ÇÖZÜM
+# ERKOZ ANALİZ v3.2 - BAŞLIK UYUMLU KESİN ÇÖZÜM
 st.set_page_config(page_title="Erkoz Analiz", layout="centered")
 st.title("🚴‍♂️ Erkoz Yazılım - Sürüş Analizi")
 
-# Senin linkini buraya sabitledim kanka
 SHEET_URL = "https://docs.google.com/spreadsheets/d/1Z4WxyRA3Q3bUtvu29ZebnRIal10554fIQvut9uoVOZY/edit"
 
 conn = st.connection("gsheets", type=GSheetsConnection)
@@ -32,6 +31,8 @@ with st.form("surus_formu"):
     if submit:
         try:
             puan = hesapla_erkoz_puani(km, ruzgar, yukselti)
+            
+            # Tablo başlıklarıyla birebir aynı isimleri kullanıyoruz
             yeni_veri = pd.DataFrame([{
                 "Tarih": str(tarih),
                 "KM": km,
@@ -40,7 +41,7 @@ with st.form("surus_formu"):
                 "Erkoz Puani": puan
             }])
             
-            # Mevcut veriyi çek ve üstüne ekle
+            # Önce oku sonra ekle yöntemi (En güvenli)
             mevcut_veri = conn.read(spreadsheet=SHEET_URL)
             toplam_veri = pd.concat([mevcut_veri, yeni_veri], ignore_index=True)
             conn.update(spreadsheet=SHEET_URL, data=toplam_veri)
@@ -48,5 +49,4 @@ with st.form("surus_formu"):
             st.success(f"✅ Kayıt Başarılı! Puanın: {puan}")
             st.balloons()
         except Exception as e:
-            st.error(f"Bir hata oluştu: {e}")
-            st.info("Not: Sayfayı yenileyip tekrar deneyebilirsin.")
+            st.error(f"Hata detayı: {e}")
