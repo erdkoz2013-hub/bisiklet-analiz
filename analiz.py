@@ -4,33 +4,51 @@ import json
 import os
 from datetime import date
 
-# --- ERKOZ ANALİZ v48.0 | GOOGLE SCRIPT TAM UYUMLU ---
-st.set_page_config(page_title="Erkoz Analiz v48.0", layout="wide", page_icon="🚴‍♂️")
+# --- ERKOZ ANALİZ v48.1 | MULTI-USER & SESSION SAFE ---
+st.set_page_config(page_title="Erkoz Analiz v48.1", layout="wide", page_icon="🚴‍♂️")
 
-# --- 1. AYARLAR ---
-SETTINGS_FILE = "erkoz_settings.json"
+# --- 1. AYARLAR VE OTURUM YÖNETİMİ ---
+# Google Script URL'n (Değiştirme, aynı kalsın)
 SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZBLq5CwQosxqAG7LpuNYoIf9nMKloputy7EOVEZx5XcUmhI0wJAh3jExb6gPIrANrJg/exec"
 
-def load_settings():
-    if os.path.exists(SETTINGS_FILE):
-        try:
-            with open(SETTINGS_FILE, "r", encoding="utf-8") as f: return json.load(f)
-        except: pass
-    return {"ad_soyad": "Erdal Kozal", "dogum_tarihi": "1967-04-03", "boy": 179, "kilo": 69.0, "bis_marka": "Mosso Black Edition", "bis_kilosu": 10.5}
+# Uygulama her yeni sekmede açıldığında varsayılan olarak senin bilgilerinle başlar.
+# Bu sayede Tuncay'ın girdiği veriler sunucudaki dosyayı bozup senin ekranına düşmez.
+if 'user_data' not in st.session_state:
+    st.session_state['user_data'] = {
+        "ad_soyad": "Erdal Kozal", 
+        "dogum_tarihi": "1967-04-03", 
+        "boy": 179, 
+        "kilo": 69.0, 
+        "bis_marka": "Mosso Black Edition", 
+        "bis_kilosu": 10.5
+    }
 
-saved = load_settings()
-
-# --- 2. SOL PANEL (DÜZELTİLEN GÖSTERGELER) ---
+# --- 2. SOL PANEL (ERKOZ KONTROL) ---
 with st.sidebar:
     st.header("🛡️ Erkoz Kontrol")
-    ad_soyad = st.text_input("Ad Soyad", value=saved["ad_soyad"])
-    d_tarihi = st.date_input("Doğum Tarihi", date.fromisoformat(saved["dogum_tarihi"]))
-    boy = st.number_input("Boy (cm)", value=int(saved["boy"]))
-    kilo = st.number_input("Kilo (kg)", value=float(saved["kilo"]))
+    
+    # Girişleri Session State üzerinden yönetiyoruz
+    ad_soyad = st.text_input("Ad Soyad", value=st.session_state['user_data']["ad_soyad"])
+    d_tarihi = st.date_input("Doğum Tarihi", date.fromisoformat(st.session_state['user_data']["dogum_tarihi"]))
+    boy = st.number_input("Boy (cm)", value=int(st.session_state['user_data']["boy"]))
+    kilo = st.number_input("Kilo (kg)", value=float(st.session_state['user_data']["kilo"]))
+    
     st.markdown("---")
-    bis_marka = st.text_input("Bisiklet Modeli", value=saved["bis_marka"])
-    bis_kilo = st.number_input("Donanım Ağırlığı (kg)", value=float(saved["bis_kilosu"]))
+    
+    bis_marka = st.text_input("Bisiklet Modeli", value=st.session_state['user_data']["bis_marka"])
+    bis_kilo = st.number_input("Donanım Ağırlığı (kg)", value=float(st.session_state['user_data']["bis_kilosu"]))
 
+    # Kullanıcı bir şey değiştirdiğinde anlık olarak o oturuma (session) kaydediyoruz
+    st.session_state['user_data'].update({
+        "ad_soyad": ad_soyad,
+        "dogum_tarihi": str(d_tarihi),
+        "boy": boy,
+        "kilo": kilo,
+        "bis_marka": bis_marka,
+        "bis_kilosu": bis_kilo
+    })
+
+    # Dinamik Hesaplamalar
     vke = round(kilo / ((boy/100)**2), 1)
     zorluk = round((bis_kilo - 10) * 2, 1)
     
@@ -40,43 +58,45 @@ with st.sidebar:
 # --- 3. ANA EKRAN ---
 st.title("🚀 Erkoz Yazılım | Performans Analiz")
 
-c1, c2 = st.columns(2)
-km_in = c1.number_input("Sürüş Mesafesi (KM)", value=157.0)
-yuk_in = c2.number_input("Toplam Yükselti (m)", value=1049)
-ruz_in = c1.number_input("Rüzgar Hızı (km/h)", value=25.0)
-kal_in = c2.number_input("Yakılan Kalori (kcal)", value=3150)
+col1, col2 = st.columns(2)
 
+with col1:
+    km_in = st.number_input("Sürüş Mesafesi (KM)", value=157.0)
+    ruz_in = st.number_input("Rüzgar Hızı (km/h)", value=25.0)
+
+with col2:
+    yuk_in = st.number_input("Toplam Yükselti (m)", value=1049)
+    kal_in = st.number_input("Yakılan Kalori (kcal)", value=3150)
+
+# --- 4. ANALİZ VE SENKRONİZASYON ---
 if st.button("🚀 ANALİZİ TAMAMLA VE EXCEL'E AKTAR"):
-    # Yerel Kayıt
-    new_data = {"ad_soyad": ad_soyad, "dogum_tarihi": str(d_tarihi), "boy": boy, "kilo": kilo, "bis_marka": bis_marka, "bis_kilosu": bis_kilo}
-    with open(SETTINGS_FILE, "w", encoding="utf-8") as f: json.dump(new_data, f)
     
-    # Hesaplamalar
+    # Yaş ve Puan Hesaplama
     yas = date.today().year - d_tarihi.year
     bak = 1 + (zorluk / 100)
     final_puan = round((((((yas+20)/100)*3) + ((vke/100)*20) + 6.9) * bak / km_in) * 115, 2)
     yag_gr = round((kal_in * 0.8) / 9, 1)
 
-    # --- 🛡️ GOOGLE SCRIPT TAM UYUMLU PAYLOAD (SENİN VERDİĞİN LİSTE) ---
-    # Bu isimler script'indeki 'data.xxxx' kısımlarıyla birebir aynıdır.
+    # Google Script Payload (Excel Sütunları)
     payload = {
-        "adSoyad": ad_soyad,       # A
-        "bisikleti": bis_marka,    # B
-        "bisKilosu": bis_kilo,     # C
-        "surusTarihi": str(date.today()), # D
-        "surusKM": km_in,          # E
-        "ruzgarHizi": ruz_in,      # F
-        "yukselti": yuk_in,        # G
-        "puan": final_puan         # H
+        "adSoyad": ad_soyad,       # A Sütunu
+        "bisikleti": bis_marka,    # B Sütunu
+        "bisKilosu": bis_kilo,     # C Sütunu
+        "surusTarihi": str(date.today()), # D Sütunu
+        "surusKM": km_in,          # E Sütunu
+        "ruzgarHizi": ruz_in,      # F Sütunu
+        "yukselti": yuk_in,        # G Sütunu
+        "puan": final_puan         # H Sütunu
     }
     
+    # Excel'e Gönderim
     try:
-        requests.post(SCRIPT_URL, json=payload, timeout=5)
+        response = requests.post(SCRIPT_URL, json=payload, timeout=7)
         st.success(f"✅ Excel Senkronizasyonu Başarılı! (Puan: {final_puan})")
-    except:
-        st.warning("⚠️ Excel bağlantısı kurulamadı, interneti kontrol et kanka.")
+    except Exception as e:
+        st.warning(f"⚠️ Excel bağlantısı kurulamadı. (Hata: {e})")
 
-    # --- 🏆 JANJANLI SERTİFİKA ---
+    # --- 🏆 SERTİFİKA EKRANI ---
     st.divider()
     with st.container(border=True):
         st.header(f"🏆 BAŞARI SERTİFİKASI: {ad_soyad}")
@@ -93,4 +113,4 @@ if st.button("🚀 ANALİZİ TAMAMLA VE EXCEL'E AKTAR"):
         res1.error(f"🎯 *GENEL PERFORMANS SKORU*: {final_puan}")
         res2.warning(f"🔥 *TOPLAM YAKILAN YAĞ*: {yag_gr} gr")
 
-st.caption("Erkoz Yazılım © 2026 | v48.0 - Data Sync Master")
+st.caption("Erkoz Yazılım © 2026 | v48.1 - Multi-User Sync Master")
