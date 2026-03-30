@@ -3,12 +3,14 @@ import pandas as pd
 from datetime import date
 import requests
 
-# ERKOZ ANALİZ v5.0 - FİNAL: KAYIT AKTİF!
-st.set_page_config(page_title="Erkoz Analiz", layout="centered")
-st.title("🚴‍♂️ Erkoz Yazılım - Sürüş Analizi")
+# ERKOZ ANALİZ v7.0 - TAM OTOMATİK SİSTEM
+st.set_page_config(page_title="Erkoz Analiz", layout="centered", page_icon="🚴‍♂️")
 
-# Senin düzelttiğin CSV linkin
-CSV_URL = "https://docs.google.com/spreadsheets/d/1Z4WxyRA3Q3bUtvu29ZebnRIal10554fIQvut9uoVOZY/gviz/tq?tqx=out:csv"
+st.title("🚴‍♂️ Erkoz Yazılım - Sürüş Analizi")
+st.markdown("---")
+
+# Senin Google Apps Script Linkin
+SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz4PX7fgUG6uEiGu_Y5aQ8d7kvHNybZvhKivP3bSCSHdL1KuNfais2bziK4Dnoilvi9-w/exec"
 
 def hesapla_erkoz_puani(km, ruzgar, yukselti):
     std_puan = 13.5
@@ -20,21 +22,38 @@ def hesapla_erkoz_puani(km, ruzgar, yukselti):
 st.subheader("📊 Yeni Sürüş Girişi")
 
 with st.form("surus_formu"):
-    tarih = st.date_input("Tarih", date.today())
-    km = st.number_input("Mesafe (KM)", min_value=1.0, value=165.0)
-    ruzgar = st.number_input("Rüzgar Hızı (km/h)", min_value=0.0, value=1.0)
-    yukselti = st.number_input("Yükselti (Metre)", min_value=0, value=550)
+    tarih = st.date_input("Tarih Seçin", date.today())
+    km = st.number_input("Mesafe (KM)", min_value=1.0, value=165.0, step=0.1)
+    ruzgar = st.number_input("Rüzgar Hızı (km/h)", min_value=0.0, value=1.0, step=0.1)
+    yukselti = st.number_input("Yükselti Kazanımı (Metre)", min_value=0, value=550)
+    
+    st.write("---")
     submit = st.form_submit_button("HESAPLA VE BULUTA KAYDET")
 
     if submit:
         puan = hesapla_erkoz_puani(km, ruzgar, yukselti)
-        st.success(f"✅ Hesaplama Başarılı! Erkoz Puanın: {puan}")
-        st.balloons()
         
-        # Veriyi Hazırla
-        st.write("Kaydedilecek Veri:")
-        yeni_veri = pd.DataFrame([[str(tarih), km, ruzgar, yukselti, puan]], 
-                                 columns=["Tarih", "KM", "Rüzgar", "Yukselti", "Erkoz Puani"])
-        st.table(yeni_veri)
+        # Google Sheets'e gönderilecek veri paketi
+        payload = {
+            "Tarih": str(tarih),
+            "KM": km,
+            "Rüzgar": ruzgar,
+            "Yukselti": yukselti,
+            "Puan": puan
+        }
         
-        st.info("Kanka, Google Sheets ile 'Otomatik Senkronizasyon' şu an arka planda test ediliyor. Tabloyu bilgisayardan bir kontrol et bakalım, veri düştü mü?")
+        try:
+            # Veriyi Google'a fırlatıyoruz
+            with st.spinner('Veri buluta gönderiliyor...'):
+                response = requests.post(SCRIPT_URL, json=payload)
+            
+            if response.status_code == 200:
+                st.success(f"✅ Başarıyla Kaydedildi! Erkoz Puanın: {puan}")
+                st.balloons()
+            else:
+                st.error("Bağlantı başarılı ama veri yazılamadı.")
+        except Exception as e:
+            st.error(f"Bir hata oluştu: Bağlantı kurulamadı.")
+
+st.markdown("---")
+st.caption("Erkoz Yazılım © 2026 | İzmir")
