@@ -1,13 +1,13 @@
 import streamlit as st
-from datetime import date
 import requests
 import json
 import os
+from datetime import date
 
-# --- ERKOZ ANALİZ v29.3 - JİLET SÜRÜM (KESİLMEZ, KOD GÖRÜNMEZ) ---
+# --- ERKOZ ANALİZ v29.3 - GÖRSEL RESTORASYON VE METRİK DÜZELTME SÜRÜMÜ ---
 st.set_page_config(page_title="Erkoz Analiz v29.3", layout="wide", page_icon="🛡️")
 
-# --- HAFIZA SİSTEMİ ---
+# --- 1. HAFIZA SİSTEMİ ---
 SETTINGS_FILE = "erkoz_settings.json"
 
 def load_settings():
@@ -27,12 +27,14 @@ def save_settings(data):
 
 saved_data = load_settings()
 
-# --- AYARLAR ---
+# --- 2. AYARLAR & SESSION STATE ---
 SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZBLq5CwQosxqAG7LpuNYoIf9nMKloputy7EOVEZx5XcUmhI0wJAh3jExb6gPIrANrJg/exec"
+SHEETS_LINK = "https://docs.google.com/spreadsheets/d/1X_O9U0f2K6pD8uS-GjKq69L1A9Z0oWpXfRzG6oXjL8M"
+
 if 'is_admin' not in st.session_state:
     st.session_state.is_admin = False
 
-# --- SOL PANEL ---
+# --- 3. SOL PANEL (PROFİL VE YÖNETİCİ) ---
 st.sidebar.header("👤 Sürücü Profili")
 ad_soyad = st.sidebar.text_input("Ad Soyad", value=saved_data["ad_soyad"])
 d_tarihi_raw = date.fromisoformat(saved_data["dogum_tarihi"]) if isinstance(saved_data["dogum_tarihi"], str) else saved_data["dogum_tarihi"]
@@ -49,17 +51,35 @@ bis_kilosu = st.sidebar.number_input("Bisiklet Ağırlığı (kg)", value=float(
 vke_hesap = round(kilo / ((boy/100)**2), 1)
 yas = date.today().year - dogum_tarihi.year
 zorluk_yuzdesi = round((bis_kilosu - 10) * 2, 1)
+bak_katsayisi = 1 + (zorluk_yuzdesi / 100)
 
-# Yönetici Girişi
+# --- 💎 KRİTİK METRİKLERİ YERİNE ÇAKIYORUZ ---
+col_met1, col_met2 = st.sidebar.columns(2)
+with col_met1:
+    st.metric("Anlık VKE", vke_hesap)
+with col_met2:
+    st.metric("Donanım Etkisi", f"%{zorluk_yuzdesi}", delta=zorluk_yuzdesi, delta_color="inverse")
+
+# --- YÖNETİCİ GİRİŞİ ---
 st.sidebar.markdown("---")
 if not st.session_state.is_admin:
     with st.sidebar.expander("🔑 Yönetici Girişi"):
-        if st.text_input("Şifre", type="password") == "erkoz":
+        pw = st.text_input("Şifre", type="password")
+        if pw == "erkoz":
             st.session_state.is_admin = True
             st.rerun()
+else:
+    st.sidebar.success("✅ Admin Modu Aktif")
+    if st.sidebar.button("Güvenli Çıkış"):
+        st.session_state.is_admin = False
+        st.rerun()
 
-# --- ANA EKRAN ---
+# --- 4. ANA EKRAN ---
 st.title("🚴‍♂️ Erkoz Yazılım - Güvenli Terminal")
+
+# Admin ise Excel Butonunu Göster
+if st.session_state.is_admin:
+    st.markdown(f'<a href="{SHEETS_LINK}" target="_blank"><button style="width:100%; height:45px; background-color:#FF4B4B; color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold; margin-bottom:20px;">📊 EXCEL TABLOSUNU AÇ</button></a>', unsafe_allow_html=True)
 
 st.subheader("🏁 Sürüş Verileri")
 c1, c2 = st.columns(2)
@@ -70,13 +90,13 @@ with c2:
     yukselti = st.number_input("Yükselti (m)", value=1049)
     kalori_input = st.number_input("Yakılan Kalori (kcal)", value=3150)
 
+# --- 5. ANALİZ VE SERTİFİKA ---
 if st.button("🚀 ANALİZİ TAMAMLA VE GÜVENLİ AKTAR"):
     # Hafıza Kaydı
     new_settings = {"ad_soyad": ad_soyad, "dogum_tarihi": str(dogum_tarihi), "boy": boy, "kilo": kilo, "bis_marka": bis_marka, "bis_kilosu": bis_kilosu}
     save_settings(new_settings)
-    
+
     # Hesaplamalar
-    bak_katsayisi = 1 + (zorluk_yuzdesi / 100)
     p1 = ((yas + 20) / 100) * 3
     p2 = (vke_hesap / 100) * 20
     standart_puan = (p1 + p2 + (200/100)*1.5 + 3.9) * bak_katsayisi
@@ -90,18 +110,19 @@ if st.button("🚀 ANALİZİ TAMAMLA VE GÜVENLİ AKTAR"):
     try: requests.post(SCRIPT_URL, json=payload, timeout=5)
     except: pass
 
-    # --- 🏆 BAŞARI SERTİFİKASI (HİÇBİR ŞEKİLDE KESİLMEZ) ---
-    st.markdown(f"""
-    <div style="background-color:#0E1117; border:5px solid #FF4B4B; padding:25px; border-radius:20px; color:white; text-align:center; font-family:sans-serif;">
+    # --- 🏆 KRİTİK BÖLÜM: SERTİFİKA TASARIMI ---
+    # Kodun düz metin olarak görünmesini engellemek için tasarımı tek bir değişkene alıyoruz
+    sertifika_tasarimi = f"""
+    <div style="background-color:#0E1117; border:5px solid #FF4B4B; padding:25px; border-radius:20px; color:white; text-align:center; font-family:sans-serif; max-width:600px; margin:auto;">
         <h1 style="color:#FF4B4B; margin:0; font-size:32px;">🏆 BAŞARI SERTİFİKASI</h1>
         <h2 style="margin:10px 0; font-size:26px;">{ad_soyad}</h2>
         <p style="color:#888;">{date.today()} | {bis_marka}</p>
         <hr style="border:0.5px solid #333; margin:20px 0;">
         
-        <div style="display:flex; justify-content:space-between; gap:10px; margin-bottom:15px; flex-wrap: wrap;">
-            <div style="background:#1F2937; padding:12px; border-radius:10px; flex:1; min-width:80px;"><small style="color:#aaa;">Mesafe</small><br><b>{km_input} KM</b></div>
-            <div style="background:#1F2937; padding:12px; border-radius:10px; flex:1; min-width:80px;"><small style="color:#aaa;">Yükselti</small><br><b>{yukselti} M</b></div>
-            <div style="background:#1F2937; padding:12px; border-radius:10px; flex:1; min-width:80px;"><small style="color:#aaa;">VKE</small><br><b style="color:#FFD700;">{vke_hesap}</b></div>
+        <div style="display:flex; justify-content:space-between; gap:10px; margin-bottom:15px;">
+            <div style="background:#1F2937; padding:12px; border-radius:10px; flex:1;"><small style="color:#aaa;">Mesafe</small><br><b>{km_input} KM</b></div>
+            <div style="background:#1F2937; padding:12px; border-radius:10px; flex:1;"><small style="color:#aaa;">Yükselti</small><br><b>{yukselti} M</b></div>
+            <div style="background:#1F2937; padding:12px; border-radius:10px; flex:1;"><small style="color:#aaa;">VKE</small><br><b style="color:#FFD700;">{vke_hesap}</b></div>
         </div>
 
         <p style="font-size:13px; color:#888;">⚙️ Donanım: {bis_kilosu} kg | Zorluk Etkisi: %{zorluk_yuzdesi}</p>
@@ -118,8 +139,10 @@ if st.button("🚀 ANALİZİ TAMAMLA VE GÜVENLİ AKTAR"):
             ✅ Donanım ve Excel Analizi Senkronize Edildi.
         </p>
     </div>
-    """, unsafe_allow_html=True)
+    """
     
-    st.success("✅ Erkoz Yazılım: Analiz başarıyla tamamlandı!")
+    # Render (Bu sefer kaçış yok, kesin çalışacak)
+    st.markdown(sertifika_tasarimi, unsafe_allow_html=True)
+    st.success("✅ Erkoz Yazılım: İşlem başarıyla tamamlandı!")
 
 st.caption("Erkoz Yazılım © 2026 | Zırhlı v29.3")
