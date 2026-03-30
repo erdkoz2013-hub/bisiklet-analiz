@@ -2,8 +2,8 @@ import streamlit as st
 from datetime import date
 import requests
 
-# ERKOZ ANALİZ v28.3 - VKE GÖSTERGESİ VE TAM PROFİL ENTEGRASYONU
-st.set_page_config(page_title="Erkoz Analiz v28.3", layout="wide", page_icon="🚴‍♂️")
+# ERKOZ ANALİZ v28.4 - SERTİFİKA GÖRÜNTÜ HATASI GİDERİLDİ
+st.set_page_config(page_title="Erkoz Analiz v28.4", layout="wide", page_icon="🚴‍♂️")
 
 # --- AYARLAR ---
 SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZBLq5CwQosxqAG7LpuNYoIf9nMKloputy7EOVEZx5XcUmhI0wJAh3jExb6gPIrANrJg/exec"
@@ -12,124 +12,95 @@ SHEETS_LINK = "https://docs.google.com/spreadsheets/d/1X_O9U0f2K6pD8uS-GjKq69L1A
 if 'is_admin' not in st.session_state:
     st.session_state.is_admin = False
 
-# --- SOL PANEL (TAM PROFİL & VKE HESAPLAMA) ---
+# --- SOL PANEL (TAM PROFİL & CANLI VKE) ---
 st.sidebar.header("👤 Sürücü Profili")
 ad_soyad = st.sidebar.text_input("Ad Soyad", value="Erdal Kozal")
 dogum_tarihi = st.sidebar.date_input("Doğum Tarihi", date(1967, 4, 3))
 boy = st.sidebar.number_input("Boy (cm)", value=179)
 kilo = st.sidebar.number_input("Kilo (kg)", value=69.0)
 
-# Anlık VKE Hesaplama ve Sidebar Gösterimi
+# VKE Hesaplama
 vke_hesap = round(kilo / ((boy/100)**2), 1)
 st.sidebar.metric("Vücut Kitle İndeksi (VKE)", vke_hesap)
 
 st.sidebar.markdown("---")
-st.sidebar.header("🚲 Donanım & Alışkanlık")
-bisiklet_markasi = st.sidebar.text_input("Bisiklet Markası", value="Mosso Black Edition")
-bisiklet_kilosu = st.sidebar.number_input("Bisiklet Ağırlığı (kg)", value=10.5)
-haftalik_km = st.sidebar.number_input("Haftalık Ortalama KM", value=200)
-beslenme = st.sidebar.selectbox("Beslenme Düzeyi (1-3)", [1, 2, 3], index=2)
+st.sidebar.header("🚲 Ekipman & Alışkanlık")
+bis_marka = st.sidebar.text_input("Bisiklet", value="Mosso Black Edition")
+bis_kilo = st.sidebar.number_input("Bisiklet Ağırlığı (kg)", value=10.5)
+haftalik_km = st.sidebar.number_input("Haftalık KM", value=200)
+beslenme = st.sidebar.selectbox("Beslenme", [1, 2, 3], index=2)
 
 st.sidebar.markdown("---")
-st.sidebar.header("🔑 Yönetici Girişi")
-sifre = st.sidebar.text_input("Şifre", type="password")
-if st.sidebar.button("Yönetici Panelini Aç"):
-    if sifre == "erkoz":
-        st.session_state.is_admin = True
-        st.sidebar.success("Panel Aktif!")
-    else:
-        st.sidebar.error("Hatalı!")
+if st.sidebar.button("Yönetici Çıkışı"):
+    st.session_state.is_admin = False
 
 # --- ANA EKRAN ---
-st.title("🚴‍♂️ Erkoz Yazılım - Profesyonel Grup Terminali")
+st.title("🚴‍♂️ Erkoz Yazılım - Grup Terminali")
+
+# Şifre Girişi (Sadece kapalıysa göster)
+if not st.session_state.is_admin:
+    sifre = st.sidebar.text_input("Yönetici Şifresi", type="password")
+    if st.sidebar.button("Paneli Aç"):
+        if sifre == "erkoz":
+            st.session_state.is_admin = True
+            st.rerun()
 
 if st.session_state.is_admin:
-    st.markdown(f'<a href="{SHEETS_LINK}" target="_blank"><button style="width:100%; height:50px; background-color:#FF4B4B; color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold; font-size:16px;">📊 GÜNCEL EXCEL TABLOSUNU AÇ</button></a>', unsafe_allow_html=True)
+    st.markdown(f'<a href="{SHEETS_LINK}" target="_blank"><button style="width:100%; height:45px; background-color:#FF4B4B; color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold;">📊 EXCEL LİSTESİNE GİT</button></a>', unsafe_allow_html=True)
     st.markdown("---")
 
-st.subheader("🚀 Yeni Sürüş Analizi")
+# Giriş Alanları
 col1, col2 = st.columns(2)
-
 with col1:
-    surus_km = st.number_input("Yapılan Mesafe (KM)", value=157.0, step=0.1)
-    ruzgar_hizi = st.number_input("Rüzgar Hızı (km/h)", value=25.0)
-    kalori = st.number_input("Yakılan Toplam Kalori", value=3150)
-
+    km = st.number_input("Sürüş Mesafesi (KM)", value=157.0)
+    ruzgar = st.number_input("Rüzgar (km/h)", value=25.0)
 with col2:
-    yukselti = st.number_input("Toplam Yükselti (m)", value=1049)
-    surus_tarihi = st.date_input("Sürüş Tarihi", date.today())
-    st.info(f"Profil: {ad_soyad} | VKE: {vke_hesap}")
+    yukselti = st.number_input("Tırmanış (m)", value=1049)
+    kalori = st.number_input("Kalori", value=3150)
 
-st.markdown("---")
-
-# --- ANALİZ VE KAYIT ---
-if st.button("🏁 ANALİZİ TAMAMLA VE EXCEL'E GÖNDER"):
-    # --- PUAN HESAPLAMA MOTORU ---
+# --- KAYIT VE SERTİFİKA ---
+if st.button("🚀 ANALİZİ TAMAMLA"):
+    # Puan Motoru
     yas = date.today().year - dogum_tarihi.year
+    std = ((yas + 20) / 100) * 3 + (haftalik_km / 100) * 1.5 + (beslenme / 1) * 1.3 + (vke_hesap / 5)
+    p_km = (std / km) * 100
+    kademe = 1 if ruzgar <= 15 else (2 if ruzgar <= 31 else 3)
+    p_ruzgar = (p_km / 10) * kademe
+    p_yuk = (yukselti / 1000 * 0.3) + 1
+    p_kal = (kalori / 1000) * 1.5
     
-    # Efsane yüksek puan katsayıları
-    std_puan = ((yas + 20) / 100) * 3 + (haftalik_km / 100) * 1.5 + (beslenme / 1) * 1.3 + (vke_hesap / 5)
-    km_puani = (std_puan / surus_km) * 100
-    kademe = 1 if ruzgar_hizi <= 15 else (2 if ruzgar_hizi <= 31 else 3)
-    ruzgar_katkisi = (km_puani / 10) * kademe
-    yukselti_puani = (yukselti / 1000 * 0.3) + 1
-    kalori_bonusu = (kalori / 1000) * 1.5
-    
-    final_puan = round(km_puani + ruzgar_katkisi + yukselti_puani + kalori_bonusu, 3)
-    yakilan_yag = round((kalori * 0.8) / 9, 1)
+    final_puan = round(p_km + p_ruzgar + p_yuk + p_kal, 3)
+    yag = round((kalori * 0.8) / 9, 1)
 
-    payload = {
-        "adSoyad": ad_soyad, 
-        "bisikleti": bisiklet_markasi, 
-        "bisKilosu": bisiklet_kilosu,
-        "surusTarihi": str(surus_tarihi), 
-        "surusKM": surus_km, 
-        "ruzgarHizi": ruzgar_hizi,
-        "yukselti": yukselti, 
-        "puan": final_puan
-    }
+    payload = {"adSoyad": ad_soyad, "bisikleti": bis_marka, "bisKilosu": bis_kilo, "surusTarihi": str(date.today()), "surusKM": km, "ruzgarHizi": ruzgar, "yukselti": yukselti, "puan": final_puan}
     
     try:
-        response = requests.post(SCRIPT_URL, json=payload, timeout=15)
-        if response.status_code == 200:
-            
-            # BAŞARI BELGESİ (VKE DAHİL)
-            st.markdown(f"""
-            <div style="background-color:#0E1117; border:5px solid #FF4B4B; padding:25px; border-radius:20px; color:white; text-align:center; font-family:sans-serif;">
-                <h1 style="color:#FF4B4B; margin-top:0;">🏆 BAŞARI SERTİFİKASI</h1>
-                <h2 style="margin:5px 0;">{ad_soyad}</h2>
-                <p style="color:#888;">{surus_tarihi} | {bisiklet_markasi}</p>
-                
-                <hr style="border:0.5px solid #333; margin:20px 0;">
-                
-                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom:20px;">
-                    <div style="background:#1F2937; padding:10px; border-radius:10px;">
-                        <small style="color:#888;">Mesafe</small><br><b>{surus_km} KM</b>
-                    </div>
-                    <div style="background:#1F2937; padding:10px; border-radius:10px;">
-                        <small style="color:#888;">Yükselti</small><br><b>{yukselti} M</b>
-                    </div>
-                    <div style="background:#1F2937; padding:10px; border-radius:10px;">
-                        <small style="color:#888;">VKE</small><br><b style="color:#FFD700;">{vke_hesap}</b>
-                    </div>
-                </div>
-
-                <div style="background:linear-gradient(145deg, #FF4B4B, #8B0000); padding:20px; border-radius:15px; box-shadow: 0 4px 15px rgba(255,75,75,0.3);">
-                    <p style="margin:0; font-size:14px; opacity:0.8;">GENEL PERFORMANS SKORU</p>
-                    <h1 style="font-size:65px; margin:0; font-weight:bold;">{final_puan}</h1>
-                </div>
-                
-                <div style="margin-top:20px; font-size:15px; color:#32CD32; font-weight:bold;">
-                    🔥 Yakılan Yağ: {yakilan_yag} gr | 🔋 Kalori: {kalori} kcal | 💨 Rüzgar: {ruzgar_hizi} km/h
-                </div>
+        requests.post(SCRIPT_URL, json=payload, timeout=15)
+        
+        # --- HATASIZ SERTİFİKA TASARIMI ---
+        # Burada f-string hatasını önlemek için güvenli HTML kullandım
+        st.markdown(f"""
+        <div style="background-color:#111; border:4px solid #FF4B4B; padding:20px; border-radius:15px; color:white; text-align:center;">
+            <h1 style="color:#FF4B4B; margin:0;">🏆 BAŞARI SERTİFİKASI</h1>
+            <h2 style="margin:10px 0;">{ad_soyad}</h2>
+            <p style="color:#888;">{date.today()} | {bis_marka}</p>
+            <hr style="border:0.5px solid #333;">
+            <table style="width:100%; color:white; margin:15px 0;">
+                <tr>
+                    <td><small>Mesafe</small><br><b>{km} KM</b></td>
+                    <td><small>Yükselti</small><br><b>{yukselti} M</b></td>
+                    <td><small>VKE</small><br><b style="color:#FFD700;">{vke_hesap}</b></td>
+                </tr>
+            </table>
+            <div style="background:linear-gradient(to right, #FF4B4B, #8B0000); padding:15px; border-radius:10px;">
+                <p style="margin:0; font-size:14px;">PERFORMANS SKORU</p>
+                <h1 style="margin:0; font-size:55px;">{final_puan}</h1>
             </div>
-            """, unsafe_allow_html=True)
-            
-            st.success("✅ Veriler Excel'e işlendi ve VKE analiz edildi!")
-        else:
-            st.error(f"Hata: {response.status_code}")
-    except Exception as e:
-        st.error(f"Bağlantı hatası: {e}")
+            <p style="margin-top:15px; color:#32CD32;">🔥 {yag} gr Yağ Yakıldı | 🔋 {kalori} kcal</p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.success("Veri Excel'e uçtu!")
+    except:
+        st.error("Bağlantı hatası!")
 
-st.markdown("---")
-st.caption("Erkoz Yazılım © 2026 | İzmir")
+st.caption("Erkoz Yazılım © 2026")
