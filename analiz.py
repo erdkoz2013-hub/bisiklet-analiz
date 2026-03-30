@@ -2,90 +2,64 @@ import streamlit as st
 from datetime import date
 import requests
 
-# ERKOZ ANALİZ v27.2 - HATTU ONAR (YENİ URL & TABLO ENTEGRASYONU)
-st.set_page_config(page_title="Erkoz Analiz v27.2", layout="wide", page_icon="🚴‍♂️")
+# ERKOZ ANALİZ v27.5 - KESİNTİSİZ BAĞLANTI GÜNCELLEMESİ
+st.set_page_config(page_title="Erkoz Analiz v27.5", layout="wide", page_icon="🚴‍♂️")
 
-# --- GÜNCEL AYARLAR ---
-ADMIN_PASSWORD = "erkoz" 
-# Senin verdiğin yeni Apps Script URL'si:
-SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx6UZvqPnAzqiFfdUFGuKmvHQKPjsNC3gDHNYO5KO0yOgIq_737ST5_5yEDa5UNz7guobg/exec"
-# Google Sheets (Excel) dosyanın kendi linki:
+# --- YENİ AKTİF URL ---
+SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZBLq5CwQosxqAG7LpuNYoIf9nMKloputy7EOVEZx5XcUmhI0wJAh3jExb6gPIrANrJg/exec"
 SHEETS_LINK = "https://docs.google.com/spreadsheets/d/1X_O9U0f2K6pD8uS-GjKq69L1A9Z0oWpXfRzG6oXjL8M"
 
 if 'is_admin' not in st.session_state:
     st.session_state.is_admin = False
 
-# --- SOL PANEL (PROFİL & KONTROL PANELİ) ---
-st.sidebar.header("👤 Sürücü Profili")
-ad_soyad = st.sidebar.text_input("Ad Soyad", value="Erdal Kozal")
-dogum_tarihi = st.sidebar.date_input("Doğum Tarihi", date(1967, 4, 3))
-boy = st.sidebar.number_input("Boy (cm)", value=179)
-kilo = st.sidebar.number_input("Kilo (kg)", value=69.0)
-
-st.sidebar.markdown("---")
-st.sidebar.header("🚲 Donanım & Performans")
-bisiklet_markasi = st.sidebar.text_input("Bisiklet Markası", value="Mosso Black Edition")
-bisiklet_kilosu = st.sidebar.number_input("Bisiklet Ağırlığı (kg)", value=10.5)
-haftalik_km = st.sidebar.number_input("Haftalık KM", value=200)
-beslenme = st.sidebar.selectbox("Beslenme (1-3)", [1, 2, 3], index=2)
-
-st.sidebar.markdown("---")
-st.sidebar.header("🔑 Yönetici Alanı")
-sifre_denemesi = st.sidebar.text_input("Şifre", type="password")
-if st.sidebar.button("Yönetici Panelini Aç"):
-    if sifre_denemesi == ADMIN_PASSWORD:
+# --- YAN PANEL ---
+st.sidebar.header("🔑 Yönetici Girişi")
+sifre = st.sidebar.text_input("Şifre", type="password")
+if st.sidebar.button("Giriş Yap"):
+    if sifre == "erkoz":
         st.session_state.is_admin = True
-        st.sidebar.success("Panel Aktif!")
+        st.sidebar.success("Sistem hazır kanka!")
     else:
-        st.sidebar.error("Hatalı Şifre!")
+        st.sidebar.error("Hatalı!")
 
 # --- ANA EKRAN ---
 st.title("🚴‍♂️ Erkoz Yazılım - Grup Performans Terminali")
-
 if st.session_state.is_admin:
-    st.markdown("### 🛠️ Yönetici Kontrol Paneli")
-    # Tabloyu aç butonu burada güncellendi
-    st.markdown(f"""
-        <a href="{SHEETS_LINK}" target="_blank">
-            <button style="width:100%; height:60px; background-color:#FF4B4B; color:white; border:none; border-radius:12px; font-weight:bold; font-size:18px; cursor:pointer;">
-                📊 GÜNCEL EXCEL TABLOSUNU GÖRÜNTÜLE
-            </button>
-        </a>
-    """, unsafe_allow_html=True)
-    if st.sidebar.button("Çıkış Yap"):
-        st.session_state.is_admin = False
-        st.rerun()
+    st.markdown(f'<a href="{SHEETS_LINK}" target="_blank"><button style="width:100%; height:45px; background-color:#FF4B4B; color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold;">📊 EXCEL TABLOSUNU (LİSTEYİ) AÇ</button></a>', unsafe_allow_html=True)
 
 st.markdown("---")
 
+# Veri Giriş Alanları
+ad_soyad = st.text_input("Sürücü Adı Soyadı", value="Erdal Kozal")
 col1, col2 = st.columns(2)
 with col1:
-    st.subheader("📅 Sürüş Verileri")
-    surus_tarihi = st.date_input("Sürüş Tarihi", date.today())
     surus_km = st.number_input("Yapılan KM", value=157.0)
-    kalori = st.number_input("Yakılan Kalori (kcal)", value=3150)
-with col2:
-    st.subheader("🌤️ Koşullar")
     ruzgar_hizi = st.number_input("Rüzgar Hızı (km/h)", value=25.0)
-    kademe = 1 if ruzgar_hizi <= 15 else (2 if ruzgar_hizi <= 31 else 3)
-    yukselti = st.number_input("Tırmanış (m)", value=1049)
+with col2:
+    yukselti = st.number_input("Tırmanış / Yükselti (m)", value=1049)
+    surus_tarihi = st.date_input("Sürüş Tarihi", date.today())
+
+# Arka Plan Hesaplamaları (Gizli Formül)
+# Bu veriler Excel'e gitmez, sadece puanı etkiler
+yas = 59 # Sabit hesaplama verisi
+kilo = 69
+boy = 179
+vke = round(kilo / ((boy/100)**2), 1)
 
 # --- ANALİZ VE KAYIT ---
-if st.button("🚀 SÜRÜŞÜ ANALİZ ET VE EXCEL'E GÖNDER"):
-    # Puan Hesaplama Formülü
-    yas = date.today().year - dogum_tarihi.year
-    vke = round(kilo / ((boy/100)**2), 1)
-    std_puan = round(((yas + 20) / 100) * 3 + (haftalik_km / 100) * 1.5 + (beslenme / 1) * 1.3 + (vke / 5), 3)
+if st.button("🚀 SÜRÜŞÜ ANALİZ ET VE GÖNDER"):
+    # Erkoz Özel Puanlama Motoru
+    std_puan = round(((yas + 20) / 100) * 3 + (vke / 5), 3)
     km_p = round((std_puan / surus_km) * 100, 3)
-    rz_p = round((km_p / 10) * kademe, 3)
+    rz_p = round((km_p / 10) * (2 if ruzgar_hizi > 15 else 1), 3)
     yk_p = round((yukselti / 1000 * 0.3) + 1, 3)
     final_puan = round(km_p + rz_p + yk_p, 3)
 
-    # 8 Sütunlu Tam Hizalanmış Veri Paketi
+    # 8 SÜTUNLU TAM PAKET (A-H ARASI)
     payload = {
         "adSoyad": ad_soyad, 
-        "bisikleti": bisiklet_markasi, 
-        "bisKilosu": bisiklet_kilosu,
+        "bisikleti": "Mosso Black Edition", 
+        "bisKilosu": 10.5,
         "surusTarihi": str(surus_tarihi), 
         "surusKM": surus_km, 
         "ruzgarHizi": ruzgar_hizi,
@@ -94,26 +68,28 @@ if st.button("🚀 SÜRÜŞÜ ANALİZ ET VE EXCEL'E GÖNDER"):
     }
     
     try:
-        # Yeni URL üzerinden gönderim
-        response = requests.post(SCRIPT_URL, json=payload)
+        # İstek gönderiliyor
+        with st.spinner('Veri Excel yolunda, bekleniyor...'):
+            response = requests.post(SCRIPT_URL, json=payload, timeout=15)
+        
         if response.status_code == 200:
             st.balloons()
-            st.success("✅ Veriler yeni köprü üzerinden başarıyla Excel'e işlendi!")
+            st.success("✅ İŞLEM TAMAM! Veriler milimetrik olarak Excel'e işlendi.")
             
-            # BAŞARI BELGESİ
+            # GURUR TABLOSU (KISA ÖZET)
             st.markdown(f"""
-            <div style="background:#0E1117; border:5px double #FF4B4B; padding:20px; border-radius:15px; color:white; text-align:center;">
-                <h2 style="color:#FF4B4B; margin-top:0;">🏆 ERKOZ BAŞARI BELGESİ</h2>
-                <p style="font-size:18px;"><b>{ad_soyad}</b></p>
-                <hr style="border:0.5px solid #333;">
-                <h1 style="color:#FF4B4B; font-size:60px; margin:10px 0;">{final_puan}</h1>
-                <p>{surus_km} KM | {yukselti} M | {ruzgar_hizi} km/h</p>
+            <div style="background:#0E1117; border:3px solid #FF4B4B; padding:15px; border-radius:10px; color:white; text-align:center;">
+                <h3 style="color:#FF4B4B;">🏆 PERFORMANS SKORU</h3>
+                <h1 style="font-size:50px; margin:0;">{final_puan}</h1>
+                <p style="color:#888;">{ad_soyad} | {surus_km} KM</p>
             </div>
             """, unsafe_allow_html=True)
         else:
-            st.error(f"Sunucu hatası: {response.status_code}")
+            st.error(f"⚠️ Sunucu Hatası: {response.status_code}")
+            st.info("İpucu: Apps Script'te 'Erişimi olanlar: Herkes' seçili olduğundan emin ol kanka.")
+            
     except Exception as e:
-        st.error(f"Bağlantı kurulamadı: {e}")
+        st.error(f"❌ Bağlantı Kesildi: {e}")
 
 st.markdown("---")
 st.caption("Erkoz Yazılım © 2026 | İzmir")
