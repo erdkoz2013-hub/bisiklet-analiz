@@ -2,8 +2,8 @@ import streamlit as st
 from datetime import date
 import requests
 
-# ERKOZ ANALİZ v24.0 - YAĞ YAKIM & ENERJİ GÜNCELLEMESİ
-st.set_page_config(page_title="Erkoz Analiz v24.0", layout="wide", page_icon="🚴‍♂️")
+# ERKOZ ANALİZ v25.0 - ŞEFFAF RÜZGAR ANALİZİ & YAĞ YAKIM GÜNCELLEMESİ
+st.set_page_config(page_title="Erkoz Analiz v25.0", layout="wide", page_icon="🚴‍♂️")
 
 st.title("🚴‍♂️ Erkoz Yazılım - Profesyonel Analiz")
 st.markdown("---")
@@ -13,7 +13,7 @@ SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx6UlQDdgybmd9UyNwyIE7Nx2J
 # --- MOTOR ---
 def ruzgar_kademesi_bul(hiz):
     if hiz <= 15: return 1
-    elif hiz <= 30: return 2
+    elif hiz <= 31: return 2
     else: return 3
 
 def hesapla_standart_puan(yas, haftalik_km, beslenme, vke_puani):
@@ -47,18 +47,24 @@ with col1:
 with col2:
     st.subheader("🌤️ Koşullar")
     ruzgar_hizi = st.number_input("Rüzgar Hızı (km/h)", value=25.0)
+    
+    # --- RÜZGAR BİLGİ NOTU (İSTEDİĞİN ÖZELLİK) ---
+    kademe = ruzgar_kademesi_bul(ruzgar_hizi)
+    if kademe == 1:
+        st.info(f"🌬️ *1. Kademe Rüzgar:* Hafif esinti. Katkı puanı çarpanı: 1x")
+    elif kademe == 2:
+        st.warning(f"🌪️ *2. Kademe Rüzgar:* Orta şiddet! Katkı puanı çarpanı: 2x")
+    else:
+        st.error(f"🌀 *3. Kademe Rüzgar:* Çok şiddetli! Katkı puanı çarpanı: 3x")
+        
     yukselti = st.number_input("Yükselti (m)", value=1049)
 
 if st.button("🚀 ANALİZİ VE YAĞ YAKIMINI KAYDET"):
     # Hesaplamalar
     km_puani = round((std_puan / surus_km) * 100, 3)
-    kademe = ruzgar_kademesi_bul(ruzgar_hizi)
     ruzgar_katkisi = round((km_puani / 10) * kademe, 3)
     yukselti_puani = round((yukselti / 1000 * 0.3) + 1, 3)
     kalori_bonusu = round((kalori / 1000) * 1.5, 3)
-    
-    # YAĞ YAKIM HESABI (Gram cinsinden)
-    # Formül: (Kalori * 0.8) / 9
     yakilan_yag = round((kalori * 0.8) / 9, 1)
     
     final_puan = round(km_puani + ruzgar_katkisi + yukselti_puani + kalori_bonusu, 3)
@@ -76,7 +82,7 @@ if st.button("🚀 ANALİZİ VE YAĞ YAKIMINI KAYDET"):
         
         cert_container = f"""
         <div style="background-color: #0E1117; border: 5px double #FF4B4B; padding: 20px; border-radius: 15px; font-family: sans-serif; color: white;">
-            <h2 style="color: #FF4B4B; text-align: center; margin-top: 0;">🏆 ERKOZ PERFORMANS & YAĞ YAKIM ANALİZİ</h2>
+            <h2 style="color: #FF4B4B; text-align: center; margin-top: 0;">🏆 ERKOZ PERFORMANS ANALİZİ</h2>
             <p style="text-align: center; color: #888;">Tarih: {surus_tarihi}</p>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -84,13 +90,13 @@ if st.button("🚀 ANALİZİ VE YAĞ YAKIMINI KAYDET"):
                     <small style="color:#888">Mesafe: {surus_km} KM</small><br><b style="color:#00D4FF">Puan: {km_puani}</b>
                 </div>
                 <div style="background:#161B22; padding:10px; border-radius:8px;">
-                    <small style="color:#888">Rüzgar Mücadelesi</small><br><b style="color:#00D4FF">Primi: +{ruzgar_katkisi}</b>
+                    <small style="color:#888">Rüzgar (Kademe {kademe})</small><br><b style="color:#00D4FF">Primi: +{ruzgar_katkisi}</b>
                 </div>
                 <div style="background:#161B22; padding:10px; border-radius:8px;">
                     <small style="color:#888">Tırmanış Gücü</small><br><b style="color:#00D4FF">Primi: +{yukselti_puani}</b>
                 </div>
                 <div style="background:#161B22; padding:10px; border-radius:8px;">
-                    <small style="color:#888">Yakılan Yağ Miktarı</small><br><b style="color:#32CD32">{yakilan_yag} Gram</b>
+                    <small style="color:#888">Yakılan Yağ</small><br><b style="color:#32CD32">{yakilan_yag} Gram</b>
                 </div>
             </div>
             
@@ -111,7 +117,6 @@ if st.button("🚀 ANALİZİ VE YAĞ YAKIMINI KAYDET"):
         """
         st.write("---")
         st.components.v1.html(cert_container, height=520, scrolling=False)
-        st.success(f"Analiz tamamlandı. Bugün tam {yakilan_yag} gram yağa veda ettin kanka!")
     except:
         st.error("Bağlantı hatası.")
 
