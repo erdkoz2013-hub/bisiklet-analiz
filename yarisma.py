@@ -39,10 +39,10 @@ st.markdown("""
 
     .stButton>button {
         /* BURASI KRİTİK: Genişlik ve Yükseklik Kesinlikle Değişmez */
-        width: 100% !important;
-        height: 100px !important; 
-        min-height: 100px !important;
-        max-height: 100px !important;
+        width: 50% !important;
+        height: 50px !important; 
+        min-height: 50px !important;
+        max-height: 50px !important;
         
         display: block !important;
         margin: 0 auto !important;
