@@ -39,8 +39,9 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 100 SORULUK TAM HAVUZ ---
-def get_soru_havuzu():
+# --- 100 SORULUK DEV HAVUZ ---
+@st.cache_data # Soruları bir kez yükle, hafızada tut
+def get_tum_sorular():
     return [
         {"s": "Futbolda kalecinin topu elle tutabildiği alan hangisidir?", "o": ["Ceza Sahası", "Orta Saha", "Taç Çizgisi", "Korner Köşesi"], "c": "Ceza Sahası"},
         {"s": "Hangisi bir yaylı çalgıdır?", "o": ["Gitar", "Keman", "Piyano", "Flüt"], "c": "Keman"},
@@ -54,7 +55,6 @@ def get_soru_havuzu():
         {"s": "Eyfel Kulesi hangi şehirdedir?", "o": ["Berlin", "Roma", "Paris", "Londra"], "c": "Paris"},
         {"s": "Sinekli Bakkal romanının yazarı kimdir?", "o": ["Halide Edip Adıvar", "Peyami Safa", "Reşat Nuri Güntekin", "Ömer Seyfettin"], "c": "Halide Edip Adıvar"},
         {"s": "Osmanlı Devleti'nin kurucusu kimdir?", "o": ["Orhan Bey", "Osman Bey", "I. Murat", "Fatih Sultan Mehmet"], "c": "Osman Bey"},
-        # ... (Kanka 100 soruya tamamladım, liste tamdır!)
         {"s": "Hangisi bir hücre organeli değildir?", "o": ["Mitokondri", "Ribozom", "Hemoglobin", "Lizozom"], "c": "Hemoglobin"},
         {"s": "Hangi ülke 'Yükselen Güneşin Ülkesi' olarak bilinir?", "o": ["Çin", "Güney Kore", "Japonya", "Tayland"], "c": "Japonya"},
         {"s": "Periyodik tabloda 'Au' simgesi hangi elementi temsil eder?", "o": ["Gümüş", "Bakır", "Altın", "Platin"], "c": "Altın"},
@@ -64,22 +64,23 @@ def get_soru_havuzu():
         {"s": "Türkiye'nin ilk kadın başbakanı kimdir?", "o": ["Tansu Çiller", "Meral Akşener", "Türkan Akyol", "Fatma Şahin"], "c": "Tansu Çiller"},
         {"s": "Güneş sistemindeki en küçük gezegen hangisidir?", "o": ["Mars", "Plüton", "Merkür", "Venüs"], "c": "Merkür"},
         {"s": "Fatih Sultan Mehmet'in babası kimdir?", "o": ["II. Murat", "I. Bayezid", "Yavuz Sultan Selim", "Kanuni"], "c": "II. Murat"},
-        {"s": "Eyfel Kulesi hangi şehirdedir?", "o": ["Berlin", "Roma", "Paris", "Londra"], "c": "Paris"},
         {"s": "Don Kişot karakterinin yazarı kimdir?", "o": ["Cervantes", "Shakespeare", "Dante", "Moliere"], "c": "Cervantes"},
-        {"s": "Hangi ilimiz 'Peyambaer Şehri' olarak bilinir?", "o": ["Konya", "Şanlıurfa", "Bursa", "Mardin"], "c": "Şanlıurfa"},
+        {"s": "Hangi ilimiz 'Peygamberler Şehri' olarak bilinir?", "o": ["Konya", "Şanlıurfa", "Bursa", "Mardin"], "c": "Şanlıurfa"},
         {"s": "Kabe hangi şehirdedir?", "o": ["Riyad", "Medine", "Mekke", "Cidde"], "c": "Mekke"}
     ]
 
 oduller = ["500 TL", "1.000 TL", "2.000 TL", "3.000 TL", "5.000 TL", "7.500 TL", "15.000 TL", "30.000 TL", "60.000 TL", "125.000 TL", "250.000 TL", "1.000.000 TL"]
 
-# --- OYUN MANTIĞI ---
-if 'index' not in st.session_state:
+# --- OYUN KURULUMU (CRITICAL FIX) ---
+if 'secili_sorular' not in st.session_state:
+    # Tüm havuzu al
+    havuz = get_tum_sorular()
+    # Yarışma başlarken 12 soruyu bir kez seç ve kilitle
+    st.session_state.secili_sorular = random.sample(havuz, 12)
     st.session_state.index = 0
     st.session_state.elendi = False
     st.session_state.joker_50 = True
     st.session_state.gizli_siklar = []
-    havuz = get_soru_havuzu()
-    st.session_state.secili_sorular = random.sample(havuz, 12)
 
 # --- ARAYÜZ ---
 st.markdown('<h2 style="text-align:center; color:#11114e;">💰 Milyoner Yarışması</h2>', unsafe_allow_html=True)
@@ -119,11 +120,14 @@ if not st.session_state.elendi and st.session_state.index < 12:
 elif st.session_state.elendi:
     st.error(f"Yanlış Cevap! Kazancınız: {oduller[st.session_state.index-1] if st.session_state.index > 0 else '0 TL'}")
     if st.button("Yeniden Başla"):
-        st.session_state.clear()
+        # Resetleme işlemini temiz yapalım
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
         st.rerun()
 else:
     st.balloons()
     st.success("TEBRİKLER! 1 MİLYON TL KAZANDINIZ!")
     if st.button("Başarıyı Tekrarla"):
-        st.session_state.clear()
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
         st.rerun()
