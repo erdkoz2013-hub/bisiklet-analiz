@@ -1,7 +1,6 @@
 import streamlit as st
 import time
 import random
-
 # Sayfa ayarları
 st.set_page_config(page_title="Milyoner", layout="centered")
 
