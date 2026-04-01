@@ -46,8 +46,8 @@ st.markdown("""
     .stApp { background-color: #FFFFFF; }
     
     .reward-banner {
-        background-color: #f8f9fa; padding: 12px; border-radius: 10px;
-        border: 2px solid #ffd700; text-align: center; margin-bottom: 15px;
+        background-color: #f8f9fa; padding: 10px; border-radius: 10px;
+        border: 2px solid #ffd700; text-align: center; margin-bottom: 10px;
         color: #11114e; font-weight: bold; font-size: 18px;
     }
 
