@@ -424,3 +424,17 @@ else:
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.rerun()
+
+# --- EN ALT KISIM: İMZA BÖLÜMÜ ---
+st.markdown("---") # Araya ince bir ayraç çizgisi atar
+st.markdown(
+    """
+    <div style="text-align: center; color: grey; font-size: 14px;">
+        Bu yarışma programı <b>[ERDAL KOZAL]</b> tarafından hazırlanmıştır. <br>
+        © 2026 Tüm Hakları Saklıdır.
+    </div>
+    """, 
+    unsafe_allow_html=True
+)
+
+
