@@ -9,7 +9,7 @@ KUTU_YUKSEKLIGI = 40   # Kutuların dikine boyu (70, 80, 90 dene)
 YAZI_BOYUTU = 16       # Cevapların yazı büyüklüğü (14 veya 18 dene)
 ARALIK_BOSLUGU = 10    # Kutuların arasındaki mesafe (5 veya 15 dene)
 JOKER_MESAFESI = -20    
-SORU_KUTUSU_BOYU = 60
+SORU_KUTUSU_BOYU = 40
 # ==========================================
 
 st.markdown(f"""
