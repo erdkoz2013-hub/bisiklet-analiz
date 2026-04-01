@@ -3,51 +3,58 @@ import time
 import random
 
 # Sayfa ayarları
-st.set_page_config(page_title="Milyoner Yarışması", layout="centered")
+st.set_page_config(page_title="Milyoner", layout="centered")
 
-# --- TASARIM VE SABİT BUTON ÖLÇÜLERİ (CSS) ---
+# --- TASARIM GÜNCELLEMESİ (CSS) ---
 st.markdown("""
     <style>
     .stApp { background-color: #FFFFFF; }
     
+    /* Ödül ve Soru Bilgisi Paneli */
     .reward-banner {
-        background-color: #f8f9fa; padding: 10px; border-radius: 10px;
-        border: 2px solid #ffd700; text-align: center; margin-bottom: 15px;
-        color: #11114e; font-weight: bold; font-size: 18px;
+        background-color: #f8f9fa; padding: 15px; border-radius: 12px;
+        border: 2px solid #ffd700; text-align: center; margin-bottom: 20px;
+        color: #11114e; font-weight: bold; font-size: 20px;
     }
 
+    /* Soru Kutusu */
     .question-box {
         background: linear-gradient(145deg, #11114e, #1e1e8e);
-        padding: 25px; border-radius: 15px; color: white;
-        text-align: center; font-size: 19px; font-weight: bold;
-        margin-bottom: 20px; min-height: 140px; display: flex;
+        padding: 30px; border-radius: 20px; color: white;
+        text-align: center; font-size: 22px; font-weight: bold;
+        margin-bottom: 30px; min-height: 150px; display: flex;
         align-items: center; justify-content: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
 
+    /* 2x2 BUTON DÜZENİ */
     div[data-testid="stHorizontalBlock"] {
-        display: flex !important; flex-direction: row !important;
-        flex-wrap: wrap !important; justify-content: center !important; gap: 10px !important;
-    }
-    
-    div[data-testid="column"] {
-        width: calc(50% - 10px) !important; flex: 0 0 calc(50% - 10px) !important;
-        min-width: calc(50% - 10px) !important;
+        gap: 15px !important;
     }
 
+    /* Butonların Kendisi - Sabit Ölçü ve Şık Görünüm */
     .stButton>button {
         width: 100% !important;
-        height: 65px !important;
+        height: 70px !important; /* Yükseklik sabitlendi */
         border-radius: 15px !important;
         background: #2a2a61 !important;
         color: #ffd700 !important;
         border: 2px solid #5d5dff !important;
         font-weight: bold !important;
-        font-size: 15px !important;
+        font-size: 18px !important;
+        transition: all 0.3s ease;
     }
 
     .stButton>button:hover {
         background: #ffd700 !important;
         color: #11114e !important;
+        border-color: #ffd700 !important;
+        transform: scale(1.02);
+    }
+
+    /* Joker Bölümü */
+    .joker-area {
+        margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -67,9 +74,6 @@ def get_tum_sorular():
         {"s": "Hangi hayvanın sütü pembe renklidir?", "o": ["Zürafa", "Su Aygırı", "Fil", "Gergedan"], "c": "Su Aygırı"},
         {"s": "Eyfel Kulesi hangi şehirdedir?", "o": ["Berlin", "Roma", "Paris", "Londra"], "c": "Paris"},
         {"s": "Osmanlı Devleti'nin kurucusu kimdir?", "o": ["Orhan Bey", "Osman Bey", "I. Murat", "Fatih Sultan Mehmet"], "c": "Osman Bey"},
-        {"s": "Kabe hangi şehirdedir?", "o": ["Riyad", "Medine", "Mekke", "Cidde"], "c": "Mekke"},
-        {"s": "Hangisi bir hücre organeli değildir?", "o": ["Mitokondri", "Ribozom", "Hemoglobin", "Lizozom"], "c": "Hemoglobin"},
-        {"s": "Aspirin'in ham maddesi olan ağaç hangisidir?", "o": ["Çam", "Söğüt", "Meşe", "Gürgen"], "c": "Söğüt"},
         {"s": "Satrançta 'L' şeklinde hareket eden taş hangisidir?", "o": ["Fil", "Kale", "At", "Vezir"], "c": "At"}
     ]
 
@@ -86,7 +90,7 @@ if 'secili_sorular' not in st.session_state:
     st.session_state.gizli_siklar = []
 
 # --- ARAYÜZ ---
-st.markdown('<h2 style="text-align:center; color:#11114e;">💰 Milyoner</h2>', unsafe_allow_html=True)
+st.markdown('<h1 style="text-align:center; color:#11114e; margin-bottom:0;">💰 Milyoner</h1>', unsafe_allow_html=True)
 
 if not st.session_state.elendi and st.session_state.index < 12:
     soru = st.session_state.secili_sorular[st.session_state.index]
@@ -95,6 +99,7 @@ if not st.session_state.elendi and st.session_state.index < 12:
     st.markdown(f'<div class="reward-banner">🏆 Soru: {st.session_state.index + 1}/12 | Ödül: {mevcut_odul}</div>', unsafe_allow_html=True)
     st.markdown(f'<div class="question-box">{soru["s"]}</div>', unsafe_allow_html=True)
 
+    # CEVAP BUTONLARI - TAM 2x2 DÜZEN
     col1, col2 = st.columns(2)
     for i, opt in enumerate(soru["o"]):
         with (col1 if i % 2 == 0 else col2):
@@ -112,7 +117,8 @@ if not st.session_state.elendi and st.session_state.index < 12:
                         st.session_state.elendi = True
                         st.rerun()
 
-    st.write("---")
+    # JOKERLER
+    st.markdown('<div class="joker-area"></div>', unsafe_allow_html=True)
     j_col1, j_col2 = st.columns(2)
     with j_col1:
         if st.session_state.joker_50:
@@ -133,12 +139,12 @@ if not st.session_state.elendi and st.session_state.index < 12:
 
 elif st.session_state.elendi:
     st.error(f"Yanlış Cevap! Kazancınız: {oduller[st.session_state.index-1] if st.session_state.index > 0 else '0 TL'}")
-    if st.button("Yeniden Başla"):
+    if st.button("🔄 Yeniden Başla"):
         for key in list(st.session_state.keys()): del st.session_state[key]
         st.rerun()
 else:
     st.balloons()
-    st.success("TEBRİKLER! 1 MİLYON TL KAZANDINIZ!")
-    if st.button("Yeniden Oyna"):
+    st.success("🎉 TEBRİKLER! 1 MİLYON TL KAZANDINIZ!")
+    if st.button("🎮 Yeniden Oyna"):
         for key in list(st.session_state.keys()): del st.session_state[key]
         st.rerun()
