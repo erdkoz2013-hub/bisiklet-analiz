@@ -25,7 +25,7 @@ st.markdown(f"""
         min-width: calc(50% - {ARALIK_BOSLUGU + 5}px) !important;
     }}
     .stButton>button {{
-        width: 100% !important;
+        width: 80% !important;
         height: {KUTU_YUKSEKLIGI}px !important;
         font-size: {YAZI_BOYUTU}px !important;
         background: #2a2a61 !important;
@@ -53,9 +53,9 @@ st.markdown("""
 
     .question-box {
         background: linear-gradient(145deg, #11114e, #1e1e8e);
-        padding: 25px; border-radius: 15px; color: white;
+        padding: 15px; border-radius: 15px; color: white;
         text-align: center; font-size: 20px; font-weight: bold;
-        margin-bottom: 25px; min-height: 140px; display: flex;
+        margin-bottom: 15px; min-height: 100px; display: flex;
         align-items: center; justify-content: center;
     }
 
