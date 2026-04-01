@@ -207,7 +207,7 @@ def get_tum_sorular():
         {"s": "Türkiye Cumhuriyeti'nin ilk Genelkurmay Başkanı kimdir?", "o": ["Kazım Karabekir", "İsmet İnönü", "Fevzi Çakmak", "Rauf Orbay"], "c": "Fevzi Çakmak"},
         {"s": "Hangi gezegenin bir günü, bir yılından daha uzundur?", "o": ["Merkür", "Venüs", "Mars", "Jüpiter"], "c": "Venüs"},
         {"s": "Osmanlı İmparatorluğu'nda 'Lale Devri' hangi antlaşma ile başlamıştır?", "o": ["Pasarofça", "Karlofça", "Zitvatorok", "İstanbul"], "c": "Pasarofça"},
-        {"s": "Mona Lisa tablosu hangi müzede sergilenmektedir?", "o": ["Uffizi", "Louvre", "Prado", "British Museum"], "c": "Louvre"}
+        {"s": "Mona Lisa tablosu hangi müzede sergilenmektedir?", "o": ["Uffizi", "Louvre", "Prado", "British Museum"], "c": "Louvre"},
         {"s": "Tuncay ağanın lakabı nedir?", "o": ["Hızlı Gonzales", "Turbo", "Martı", "Yaralı Ceylan"], "c": "Turbo"},
         {"s": "G.D.G nin Büyük başkanı kimdir?", "o": ["Ajda Pekkan", "Reis", "Martı Janıtın", "Hüseyin Ovnamak"], "c": "Hüseyin Ovnamak"},
         {"s": "Hangi ülkenin resmi dili Portekizce'dir?", "o": ["Arjantin", "Brezilya", "Meksika", "Şili"], "c": "Brezilya"}
