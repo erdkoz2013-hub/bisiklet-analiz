@@ -5,56 +5,68 @@ import random
 # Sayfa ayarları
 st.set_page_config(page_title="Milyoner", layout="centered")
 
-# --- TASARIM GÜNCELLEMESİ (CSS) ---
+# --- SERT CSS MÜDAHALESİ (BOYUTLAR KİLİTLENDİ) ---
 st.markdown("""
     <style>
     .stApp { background-color: #FFFFFF; }
     
-    /* Ödül ve Soru Bilgisi Paneli */
     .reward-banner {
-        background-color: #f8f9fa; padding: 15px; border-radius: 12px;
-        border: 2px solid #ffd700; text-align: center; margin-bottom: 20px;
-        color: #11114e; font-weight: bold; font-size: 20px;
+        background-color: #f8f9fa; padding: 12px; border-radius: 10px;
+        border: 2px solid #ffd700; text-align: center; margin-bottom: 15px;
+        color: #11114e; font-weight: bold; font-size: 18px;
     }
 
-    /* Soru Kutusu */
     .question-box {
         background: linear-gradient(145deg, #11114e, #1e1e8e);
-        padding: 30px; border-radius: 20px; color: white;
-        text-align: center; font-size: 22px; font-weight: bold;
-        margin-bottom: 30px; min-height: 150px; display: flex;
+        padding: 25px; border-radius: 15px; color: white;
+        text-align: center; font-size: 20px; font-weight: bold;
+        margin-bottom: 25px; min-height: 140px; display: flex;
         align-items: center; justify-content: center;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
 
-    /* 2x2 BUTON DÜZENİ */
+    /* BUTONLARI DEMİR GİBİ SABİTLEME */
     div[data-testid="stHorizontalBlock"] {
-        gap: 15px !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+        justify-content: center !important;
     }
 
-    /* Butonların Kendisi - Sabit Ölçü ve Şık Görünüm */
+    div[data-testid="column"] {
+        width: calc(50% - 10px) !important;
+        flex: 0 0 calc(50% - 10px) !important;
+        min-width: calc(50% - 10px) !important;
+    }
+
     .stButton>button {
+        /* BURASI KRİTİK: Genişlik ve Yükseklik Kesinlikle Değişmez */
         width: 100% !important;
-        height: 70px !important; /* Yükseklik sabitlendi */
-        border-radius: 15px !important;
+        height: 65px !important; 
+        min-height: 65px !important;
+        max-height: 65px !important;
+        
+        display: block !important;
+        margin: 0 auto !important;
+        padding: 5px !important;
+        
+        border-radius: 12px !important;
         background: #2a2a61 !important;
         color: #ffd700 !important;
         border: 2px solid #5d5dff !important;
         font-weight: bold !important;
-        font-size: 18px !important;
-        transition: all 0.3s ease;
+        font-size: 15px !important;
+        
+        /* Yazı çok uzunsa butonun şeklini bozmasın, içinde kalsın */
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: normal !important;
+        line-height: 1.2 !important;
     }
 
     .stButton>button:hover {
         background: #ffd700 !important;
         color: #11114e !important;
         border-color: #ffd700 !important;
-        transform: scale(1.02);
-    }
-
-    /* Joker Bölümü */
-    .joker-area {
-        margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -90,7 +102,7 @@ if 'secili_sorular' not in st.session_state:
     st.session_state.gizli_siklar = []
 
 # --- ARAYÜZ ---
-st.markdown('<h1 style="text-align:center; color:#11114e; margin-bottom:0;">💰 Milyoner</h1>', unsafe_allow_html=True)
+st.markdown('<h2 style="text-align:center; color:#11114e;">💰 Milyoner</h2>', unsafe_allow_html=True)
 
 if not st.session_state.elendi and st.session_state.index < 12:
     soru = st.session_state.secili_sorular[st.session_state.index]
@@ -99,12 +111,13 @@ if not st.session_state.elendi and st.session_state.index < 12:
     st.markdown(f'<div class="reward-banner">🏆 Soru: {st.session_state.index + 1}/12 | Ödül: {mevcut_odul}</div>', unsafe_allow_html=True)
     st.markdown(f'<div class="question-box">{soru["s"]}</div>', unsafe_allow_html=True)
 
-    # CEVAP BUTONLARI - TAM 2x2 DÜZEN
+    # BUTONLAR - 2x2 SABİT DÜZEN
     col1, col2 = st.columns(2)
     for i, opt in enumerate(soru["o"]):
         with (col1 if i % 2 == 0 else col2):
             if opt in st.session_state.gizli_siklar:
-                st.button(" ", disabled=True, key=f"b_{i}_{st.session_state.index}")
+                # Boş butonun bile boyutu aynı kalmalı
+                st.button(" ", disabled=True, key=f"empty_{i}_{st.session_state.index}")
             else:
                 if st.button(opt, key=f"b_{i}_{st.session_state.index}"):
                     if opt == soru["c"]:
@@ -118,7 +131,7 @@ if not st.session_state.elendi and st.session_state.index < 12:
                         st.rerun()
 
     # JOKERLER
-    st.markdown('<div class="joker-area"></div>', unsafe_allow_html=True)
+    st.write("---")
     j_col1, j_col2 = st.columns(2)
     with j_col1:
         if st.session_state.joker_50:
@@ -130,7 +143,7 @@ if not st.session_state.elendi and st.session_state.index < 12:
     with j_col2:
         if st.session_state.joker_erdal:
             if st.button("🤝 Erdal Kanki"):
-                st.info(f"Erdal Kanki diyor ki: Doğru cevap '{soru['c']}'!")
+                st.info(f"Erdal Kanki: Doğru cevap '{soru['c']}'!")
                 time.sleep(2)
                 st.session_state.index += 1
                 st.session_state.joker_erdal = False
@@ -138,13 +151,13 @@ if not st.session_state.elendi and st.session_state.index < 12:
                 st.rerun()
 
 elif st.session_state.elendi:
-    st.error(f"Yanlış Cevap! Kazancınız: {oduller[st.session_state.index-1] if st.session_state.index > 0 else '0 TL'}")
-    if st.button("🔄 Yeniden Başla"):
+    st.error(f"Elendiniz! Ödül: {oduller[st.session_state.index-1] if st.session_state.index > 0 else '0 TL'}")
+    if st.button("Yeniden Başla"):
         for key in list(st.session_state.keys()): del st.session_state[key]
         st.rerun()
 else:
     st.balloons()
-    st.success("🎉 TEBRİKLER! 1 MİLYON TL KAZANDINIZ!")
-    if st.button("🎮 Yeniden Oyna"):
+    st.success("1 MİLYON TL KAZANDINIZ!")
+    if st.button("Tekrar Oyna"):
         for key in list(st.session_state.keys()): del st.session_state[key]
         st.rerun()
