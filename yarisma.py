@@ -1,4 +1,4 @@
-[15:23, 01.04.2026] Erdal: import streamlit as st
+import streamlit as st
 import time
 import random
 
