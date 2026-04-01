@@ -73,11 +73,19 @@ st.markdown("""
 
 # --- SORU BANKASI ---
 def get_soru_bankasi():
-    return [
-        {"s": "Futbolda kalecinin topu elle tutabildiği alan hangisidir?", "o": ["Ceza Sahası", "Orta Saha", "Taç Çizgisi", "Korner Köşesi"], "c": "Ceza Sahası", "z": 1},
-        {"s": "Hangisi bir yaylı çalgıdır?", "o": ["Gitar", "Keman", "Piyano", "Flüt"], "c": "Keman", "z": 1},
-        {"s": "Türkiye'nin yüzölçümü en büyük ili hangisidir?", "o": ["İstanbul", "Ankara", "Konya", "Erzurum"], "c": "Konya", "z": 1}
-    ]
+    return import json # Dosyayı okumak için bu lazım
+
+def get_soru_bankasi():
+    try:
+        with open('sorular.json', 'r', encoding='utf-8') as f:
+            tum_sorular = json.load(f)
+        
+        # Eğer dosyada 12'den az soru varsa hata vermemesi için:
+        sayi = min(len(tum_sorular), 12)
+        return random.sample(tum_sorular, sayi)
+    except FileNotFoundError:
+        # Dosya bulunamazsa oyun çökmesin diye yedek soru:
+        return [{"s": "Hata: sorular.json bulunamadı!", "o": ["A","B","C","D"], "c": "A"}]
 
 oduller = ["500 TL", "1.000 TL", "2.000 TL", "3.000 TL", "5.000 TL", "7.500 TL", "15.000 TL", "30.000 TL", "60.000 TL", "125.000 TL", "250.000 TL", "1.000.000 TL"]
 
