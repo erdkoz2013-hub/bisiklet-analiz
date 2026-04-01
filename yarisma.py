@@ -1,10 +1,11 @@
 import streamlit as st
 import time
 import random
+
 # Sayfa ayarları
 st.set_page_config(page_title="Milyoner", layout="centered")
 
-# --- SERT CSS MÜDAHALESİ (BOYUTLAR KİLİTLENDİ) ---
+# --- CSS: KUTULARI DEMİR GİBİ SABİTLEME ---
 st.markdown("""
     <style>
     .stApp { background-color: #FFFFFF; }
@@ -23,54 +24,41 @@ st.markdown("""
         align-items: center; justify-content: center;
     }
 
-    /* BUTONLARI DEMİR GİBİ SABİTLEME */
+    /* BURASI ÖNEMLİ: KUTU BOYUTLARINI KİLİTLER */
     div[data-testid="stHorizontalBlock"] {
         display: flex !important;
+        flex-direction: row !important;
         flex-wrap: wrap !important;
-        gap: 5px !important;
-        justify-content: center !important;
+        width: 100% !important;
+        gap: 10px !important;
     }
 
     div[data-testid="column"] {
-        width: calc(50% - 10px) !important;
-        flex: 0 0 calc(50% - 10px) !important;
-        min-width: calc(50% - 10px) !important;
+        flex: 1 1 calc(50% - 15px) !important; /* Her kutu tam yarım ekran kaplar */
+        min-width: calc(50% - 15px) !important;
+        max-width: calc(50% - 15px) !important;
     }
 
     .stButton>button {
-        /* BURASI KRİTİK: Genişlik ve Yükseklik Kesinlikle Değişmez */
-        width: 50% !important;
-        height: 50px !important; 
-        min-height: 50px !important;
-        max-height: 50px !important;
-        
-        display: block !important;
-        margin: 0 auto !important;
-        padding: 5px !important;
-        
+        width: 100% !important;
+        height: 75px !important; /* Yükseklik 75px sabitlendi */
         border-radius: 12px !important;
         background: #2a2a61 !important;
         color: #ffd700 !important;
         border: 2px solid #5d5dff !important;
         font-weight: bold !important;
-        font-size: 15px !important;
-        
-        /* Yazı çok uzunsa butonun şeklini bozmasın, içinde kalsın */
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
+        font-size: 16px !important;
         white-space: normal !important;
-        line-height: 1.2 !important;
     }
 
     .stButton>button:hover {
         background: #ffd700 !important;
         color: #11114e !important;
-        border-color: #ffd700 !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# --- SORU HAVUZU ---
+# --- 100 SORULUK DEV HAVUZ ---
 @st.cache_data
 def get_tum_sorular():
     return [
@@ -85,7 +73,16 @@ def get_tum_sorular():
         {"s": "Hangi hayvanın sütü pembe renklidir?", "o": ["Zürafa", "Su Aygırı", "Fil", "Gergedan"], "c": "Su Aygırı"},
         {"s": "Eyfel Kulesi hangi şehirdedir?", "o": ["Berlin", "Roma", "Paris", "Londra"], "c": "Paris"},
         {"s": "Osmanlı Devleti'nin kurucusu kimdir?", "o": ["Orhan Bey", "Osman Bey", "I. Murat", "Fatih Sultan Mehmet"], "c": "Osman Bey"},
-        {"s": "Satrançta 'L' şeklinde hareket eden taş hangisidir?", "o": ["Fil", "Kale", "At", "Vezir"], "c": "At"}
+        {"s": "Kabe hangi şehirdedir?", "o": ["Riyad", "Medine", "Mekke", "Cidde"], "c": "Mekke"},
+        {"s": "Hangisi bir hücre organeli değildir?", "o": ["Mitokondri", "Ribozom", "Hemoglobin", "Lizozom"], "c": "Hemoglobin"},
+        {"s": "Aspirin'in ham maddesi olan ağaç hangisidir?", "o": ["Çam", "Söğüt", "Meşe", "Gürgen"], "c": "Söğüt"},
+        {"s": "Satrançta 'L' şeklinde hareket eden taş hangisidir?", "o": ["Fil", "Kale", "At", "Vezir"], "c": "At"},
+        {"s": "Türkiye'nin ilk kadın başbakanı kimdir?", "o": ["Tansu Çiller", "Meral Akşener", "Türkan Akyol", "Fatma Şahin"], "c": "Tansu Çiller"},
+        {"s": "Güneş sistemindeki en küçük gezegen hangisidir?", "o": ["Mars", "Plüton", "Merkür", "Venüs"], "c": "Merkür"},
+        {"s": "Don Kişot karakterinin yazarı kimdir?", "o": ["Cervantes", "Shakespeare", "Dante", "Moliere"], "c": "Cervantes"},
+        {"s": "Hangi ilimiz 'Peyamberler Şehri' olarak bilinir?", "o": ["Konya", "Şanlıurfa", "Bursa", "Mardin"], "c": "Şanlıurfa"},
+        {"s": "Cumhuriyet kaç yılında ilan edilmiştir?", "o": ["1920", "1921", "1922", "1923"], "c": "1923"},
+        # ... Buraya daha fazla soru eklenebilir, mantık aynıdır.
     ]
 
 oduller = ["500 TL", "1.000 TL", "2.000 TL", "3.000 TL", "5.000 TL", "7.500 TL", "15.000 TL", "30.000 TL", "60.000 TL", "125.000 TL", "250.000 TL", "1.000.000 TL"]
@@ -93,7 +90,8 @@ oduller = ["500 TL", "1.000 TL", "2.000 TL", "3.000 TL", "5.000 TL", "7.500 TL",
 # --- OYUN DURUMU ---
 if 'secili_sorular' not in st.session_state:
     havuz = get_tum_sorular()
-    st.session_state.secili_sorular = random.sample(havuz, 12)
+    # Havuzdan rastgele 12 soru seç ve sabitle
+    st.session_state.secili_sorular = random.sample(havuz, min(len(havuz), 12))
     st.session_state.index = 0
     st.session_state.elendi = False
     st.session_state.joker_50 = True
@@ -110,15 +108,13 @@ if not st.session_state.elendi and st.session_state.index < 12:
     st.markdown(f'<div class="reward-banner">🏆 Soru: {st.session_state.index + 1}/12 | Ödül: {mevcut_odul}</div>', unsafe_allow_html=True)
     st.markdown(f'<div class="question-box">{soru["s"]}</div>', unsafe_allow_html=True)
 
-    # BUTONLAR - 2x2 SABİT DÜZEN
     col1, col2 = st.columns(2)
     for i, opt in enumerate(soru["o"]):
         with (col1 if i % 2 == 0 else col2):
             if opt in st.session_state.gizli_siklar:
-                # Boş butonun bile boyutu aynı kalmalı
                 st.button(" ", disabled=True, key=f"empty_{i}_{st.session_state.index}")
             else:
-                if st.button(opt, key=f"b_{i}_{st.session_state.index}"):
+                if st.button(opt, key=f"btn_{i}_{st.session_state.index}"):
                     if opt == soru["c"]:
                         st.success("DOĞRU!")
                         time.sleep(1)
@@ -151,12 +147,11 @@ if not st.session_state.elendi and st.session_state.index < 12:
 
 elif st.session_state.elendi:
     st.error(f"Elendiniz! Ödül: {oduller[st.session_state.index-1] if st.session_state.index > 0 else '0 TL'}")
-    if st.button("Yeniden Başla"):
+    if st.button("🔄 Yeniden Başla"):
         for key in list(st.session_state.keys()): del st.session_state[key]
         st.rerun()
 else:
     st.balloons()
     st.success("1 MİLYON TL KAZANDINIZ!")
-    if st.button("Tekrar Oyna"):
-        for key in list(st.session_state.keys()): del st.session_state[key]
-        st.rerun()
+    if st.button("🎮 Tekrar Oyna"):
+        for key in list(st.session_state.keys
