@@ -5,7 +5,7 @@ import random
 
 # ==========================================
 # ⚙️ SADECE BURADAKİ RAKAMLARI DEĞİŞTİR:
-UST_BOSLUK = -40
+UST_BOSLUK = -140
 KUTU_YUKSEKLIGI = 20   # Kutuların dikine boyu (70, 80, 90 dene)
 YAZI_BOYUTU = 16       # Cevapların yazı büyüklüğü (14 veya 18 dene)
 ARALIK_BOSLUGU = 5    # Kutuların arasındaki mesafe (5 veya 15 dene)
