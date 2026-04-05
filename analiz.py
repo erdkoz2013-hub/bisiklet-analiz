@@ -7,7 +7,7 @@ from streamlit_local_storage import LocalStorage
 # --- 0. STRAVA OAUTH AYARLARI (KRİTİK) ---
 CLIENT_ID = "220679"
 CLIENT_SECRET = "2107cf260184300e00123e266d7447c104fbf409" 
-REDIRECT_URI = 'https://erdalkozalyazilim.streamlit.app'
+REDIRECT_URI = 'https://erdalkozalyazilim.streamlit.app/'
 
 # --- 1. KONFİGÜRASYON VE HAFIZA ---
 st.set_page_config(page_title="Erkoz Analiz v48.7", layout="wide", page_icon="🚴‍♂️")
