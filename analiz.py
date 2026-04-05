@@ -18,7 +18,7 @@ query_params = st.query_params
 
 if "code" not in query_params:
     st.title("🚀 Erkoz Performans Analiz v48.7")
-    st.subheader("Hoş geldin! Devam etmek için Strava hesabınla bağlanman gerekiyor.")
+    st.subheader("Hoş geldin! Devam etmek için Strava hesabınla bağlanman gerekiyor.A")
     
     params = {
         "client_id": CLIENT_ID,
