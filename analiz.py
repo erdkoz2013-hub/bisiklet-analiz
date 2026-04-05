@@ -180,4 +180,4 @@ if st.button("📊 ANALİZİ TAMAMLA VE EXCEL'E UÇUR"):
         except:
             st.error("❌ Excel bağlantı hatası!")
 
-st.caption("Erkoz Yazılım © 2026 | v48.7 - Turbo Mode")
+st.caption("Erkoz Yazılım © 2026 | v49.0 - Turbo Mode")
