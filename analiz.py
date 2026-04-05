@@ -4,7 +4,7 @@ import json
 import urllib.parse
 from datetime import date
 from streamlit_local_storage import LocalStorage
-
+st.warning("⚠️ SİSTEM GÜNCELLEMESİ: Versiyon v49.0 - Bağlantı Rotası: Canlı Sunucu")
 # --- 0. STRAVA OAUTH AYARLARI (KRİTİK) ---
 CLIENT_ID = "220679"
 CLIENT_SECRET = "2107cf260184300e00123e266d7447c104fbf409" 
